@@ -1,0 +1,11 @@
+node_modules/
+test-results/
+playwright-report/
+*.log
+
+dist/
+.env
+.env.*
+RokaWright-backup-*.json
+private-data/
+attachments/

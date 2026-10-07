@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#343c2e" />
+    <title>RokaWright · The workroom</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="#new" aria-label="RokaWright — New Job"><span class="wordmark"><svg class="letter-r" viewBox="0 0 190 265" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path stroke-width="16" d="M30 116 C14 92 40 49 76 25 C104 7 140 12 153 34 C174 74 143 103 91 127 M88 60 L28 240 M94 130 C137 128 148 159 154 218"/><path stroke-width="8" d="M145 23 C177 65 169 105 124 129"/></g></svg><span class="word-fragment">oka</span><svg class="letter-w" viewBox="0 0 110 130" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" d="M10 27 L14 106 L43 44 L74 117 L100 17"/></svg><span class="word-fragment">right</span></span><small>ALTERATIONS / MADE WITH CARE</small></a>
+      <nav aria-label="Main navigation">
+        <button data-view="new">New Job</button
+        ><button data-view="customers">Customers</button
+        ><button data-view="jobs">Saved Jobs</button
+        ><button data-view="prices">Prices</button>
+      </nav>
+      <div class="header-logo"><svg class="rw-monogram" viewBox="0 0 300 300" role="img" aria-label="RokaWright RW logo" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#503443" stroke-linecap="round" stroke-linejoin="round"><path stroke-width="17" d="M42 132 C23 103 53 54 93 28 C123 9 161 12 175 40 C196 80 161 117 111 142 M104 67 C91 108 71 154 56 197 L35 241"/><path stroke-width="12" d="M165 30 C198 75 187 119 143 139 C125 147 113 148 109 145 M115 146 C154 142 169 167 166 205 L166 254 L194 192 L228 269 L253 167"/></g><path fill="#503443" d="M26 236 Q35 229 41 239 L37 248 Q29 256 24 247 Z M190 183 Q196 178 201 187 L199 197 L189 194 Z M259 263 Q266 250 279 253 Q290 259 279 272 Q267 282 259 272 Z"/></svg></div>
+    </header>
+    <main id="app"></main>
+    <footer>
+      <div class="footer-brand"><svg class="rw-monogram" viewBox="0 0 300 300" role="img" aria-label="RokaWright RW logo" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#503443" stroke-linecap="round" stroke-linejoin="round"><path stroke-width="17" d="M42 132 C23 103 53 54 93 28 C123 9 161 12 175 40 C196 80 161 117 111 142 M104 67 C91 108 71 154 56 197 L35 241"/><path stroke-width="12" d="M165 30 C198 75 187 119 143 139 C125 147 113 148 109 145 M115 146 C154 142 169 167 166 205 L166 254 L194 192 L228 269 L253 167"/></g><path fill="#503443" d="M26 236 Q35 229 41 239 L37 248 Q29 256 24 247 Z M190 183 Q196 178 201 187 L199 197 L189 194 Z M259 263 Q266 250 279 253 Q290 259 279 272 Q267 282 259 272 Z"/></svg><span>YOUR LOCAL WORKROOM</span></div>
+      <span
+        >Records stay in this browser on this device. Sharing the link does not
+        share your records.</span
+      >
+      <button id="backup-open" class="quiet">Backup & restore</button>
+    </footer>
+    <div id="notice" role="status" aria-live="polite"></div>
+    <dialog id="backup">
+      <h2>Keep your work safe.</h2>
+      <p>
+        Download a backup regularly and before clearing browser data. Store it
+        somewhere private: it contains customer information.
+      </p>
+      <button id="export">Download JSON backup</button>
+      <hr />
+      <label
+        >Restore a RokaWright backup<input
+          id="import"
+          type="file"
+          accept="application/json,.json"
+      /></label>
+      <p id="backup-message" role="status"></p>
+      <button id="restore" hidden>Replace saved data with this backup</button
+      ><button id="backup-close" class="quiet">Close</button>
+    </dialog>
+    <script src="pdf-library.js"></script>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
