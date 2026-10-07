@@ -10,7 +10,9 @@
 }
 body {
   margin: 0;
+  background: #f5f1e7;
   background: var(--cream);
+  color: #272923;
   color: var(--ink);
   font:
     15px "DM Sans",
@@ -22,17 +24,20 @@ header {
   align-items: center;
   gap: 40px;
   padding: 25px 5%;
+  border-bottom: 1px solid #ddd8cc;
   border-bottom: 1px solid var(--line);
   background: #faf8f1;
 }
 .brand {
   text-decoration: none;
+  color: #272923;
   color: var(--ink);
   font-family: Georgia, serif;
   font-size: 30px;
   letter-spacing: -1.5px;
 }
 .brand span {
+  color: #414b36;
   color: var(--olive);
 }
 .brand small {
@@ -51,6 +56,7 @@ button {
   border: 0;
   border-radius: 4px;
   padding: 12px 18px;
+  background: #414b36;
   background: var(--olive);
   color: white;
   font:
@@ -64,10 +70,12 @@ button:hover {
 nav button,
 .quiet {
   background: transparent;
+  color: #272923;
   color: var(--ink);
 }
 nav button.active {
   background: #e8e7dc;
+  color: #414b36;
   color: var(--olive);
 }
 .quiet:hover {
@@ -87,6 +95,7 @@ main {
   padding: 42px 30px 70px;
 }
 .eyebrow {
+  color: #a68046;
   color: var(--brass);
   font-size: 11px;
   font-weight: bold;
@@ -129,6 +138,7 @@ h3 {
   letter-spacing: 1px;
   border: 1px solid #c6c9b8;
   padding: 9px 12px;
+  color: #414b36;
   color: var(--olive);
   border-radius: 30px;
 }
@@ -139,6 +149,7 @@ h3 {
 }
 .panel {
   background: #fcfaf5;
+  border: 1px solid #ddd8cc;
   border: 1px solid var(--line);
   border-radius: 6px;
   padding: 25px;
@@ -157,6 +168,7 @@ h3 {
 }
 .number {
   font: 11px Arial;
+  color: #a68046;
   color: var(--brass);
   letter-spacing: 1px;
 }
@@ -167,8 +179,10 @@ h3 {
 }
 .service {
   background: #f5f2e9;
+  color: #272923;
   color: var(--ink);
   text-align: left;
+  border: 1px solid #ddd8cc;
   border: 1px solid var(--line);
   min-height: 93px;
   padding: 14px;
@@ -188,6 +202,7 @@ h3 {
 }
 .service i {
   font-style: normal;
+  color: #a68046;
   color: var(--brass);
   font-size: 19px;
 }
@@ -210,6 +225,7 @@ textarea {
   padding: 11px 12px;
   border: 1px solid #d8d3c7;
   background: #fffefa;
+  color: #272923;
   color: var(--ink);
   border-radius: 3px;
   font: 14px Arial;
@@ -225,7 +241,9 @@ select:focus {
   outline-offset: 1px;
 }
 .line {
+  border: 1px solid #ddd8cc;
   border: 1px solid var(--line);
+  border-left: 3px solid #a68046;
   border-left: 3px solid var(--brass);
   padding: 17px;
   margin-top: 15px;
@@ -256,6 +274,7 @@ select:focus {
   position: sticky;
   top: 20px;
   align-self: start;
+  background: #414b36;
   background: var(--olive);
   color: #fff;
   padding: 27px;
@@ -319,6 +338,7 @@ select:focus {
 }
 .record {
   background: #fcfaf5;
+  border: 1px solid #ddd8cc;
   border: 1px solid var(--line);
   padding: 23px;
   border-radius: 5px;
@@ -349,12 +369,14 @@ select:focus {
   align-items: center;
   gap: 14px;
   padding: 12px 0;
+  border-bottom: 1px solid #ddd8cc;
   border-bottom: 1px solid var(--line);
 }
 .price-row input {
   margin: 0;
 }
 footer {
+  border-top: 1px solid #ddd8cc;
   border-top: 1px solid var(--line);
   padding: 23px 5%;
   font-size: 10px;
@@ -384,17 +406,20 @@ footer span {
   display: none;
 }
 dialog {
+  border: 1px solid #ddd8cc;
   border: 1px solid var(--line);
   border-radius: 8px;
   max-width: 520px;
   padding: 30px;
+  background: #f5f1e7;
   background: var(--cream);
 }
 dialog::backdrop {
-  background: #20271fcc;
+  background: rgba(32,39,31,.8);
 }
 hr {
   border: 0;
+  border-top: 1px solid #ddd8cc;
   border-top: 1px solid var(--line);
   margin: 22px 0;
 }
@@ -410,6 +435,7 @@ hr {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-bottom: 1px solid #ddd8cc;
   border-bottom: 1px solid var(--line);
   padding: 10px 0;
 }
@@ -584,7 +610,6 @@ th {
     display: none !important;
   }
 }
-/* Hand-drawn initials echo the owner's supplied RW artwork. */
 .brand {
   display: block;
   color: #503443;
@@ -682,7 +707,6 @@ footer #backup-open {
     width: 31px;
   }
 }
-/* Targeted fallbacks. Modern browsers keep the existing rules above. */
 .compat-preview-banner {
   padding: 12px 5%;
   background: #e9e5d5;

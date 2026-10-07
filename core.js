@@ -43,10 +43,25 @@ export function total(job) {
 export function paid(job) {
   return job.payments.reduce((n, p) => n + p.cents, 0);
 }
-export const money = (c) =>
-  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
-    c / 100,
+export const money = (c) => {
+  if (typeof Intl !== "undefined" && Intl.NumberFormat)
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(c / 100);
+  const negative = c < 0;
+  const absolute = Math.abs(c);
+  const dollars = String(Math.floor(absolute / 100)).replace(
+    /\B(?=(\d{3})+(?!\d))/g,
+    ",",
   );
+  return (
+    (negative ? "-$" : "$") +
+    dollars +
+    "." +
+    String(absolute % 100).padStart(2, "0")
+  );
+};
 export const fresh = () => ({
   version: 1,
   customers: [],

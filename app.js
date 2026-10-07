@@ -9,9 +9,12 @@ import {
   money,
   statuses,
 } from "./core.js";
-const KEY = "rokawright.v1",
+const KEY = window.ROKA_STORAGE_KEY || "rokawright.v1",
   $ = (s) => document.querySelector(s),
-  id = () => crypto.randomUUID(),
+  id = () =>
+    window.crypto && typeof window.crypto.randomUUID === "function"
+      ? window.crypto.randomUUID()
+      : RokaCompat.uniqueId(),
   today = () => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -82,7 +85,7 @@ function jobMessage(message, error = false) {
     target = document.createElement("p");
     target.id = "job-message";
     target.setAttribute("role", "status");
-    document.querySelector(".summary")?.append(target);
+    document.querySelector(".summary")?.appendChild(target);
   }
   target.textContent = message;
   target.className = error ? "job-feedback error" : "job-feedback";
@@ -95,9 +98,9 @@ function askConfirm(message) {
     dialog.innerHTML =
       '<h2>Please confirm</h2><p></p><div class="actions"><button type="button" data-yes>Confirm</button><button type="button" class="quiet" data-no>Cancel</button></div>';
     dialog.querySelector("p").textContent = message;
-    document.body.append(dialog);
+    document.body.appendChild(dialog);
     const finish = (answer) => {
-      dialog.close();
+      RokaCompat.closeDialog(dialog);
       dialog.remove();
       resolve(answer);
     };
@@ -107,7 +110,7 @@ function askConfirm(message) {
       e.preventDefault();
       finish(false);
     };
-    dialog.showModal();
+    RokaCompat.showDialog(dialog);
     dialog.querySelector("[data-no]").focus();
   });
 }
@@ -139,7 +142,7 @@ function intro(title, sub) {
   return `<div class="intro"><div><div class="eyebrow">THE ROKAWRIGHT WORKROOM</div><h1>${title}</h1><p>${sub}</p></div><span class="badge">CUT WITH PURPOSE. SEWN WITH CARE.</span></div>`;
 }
 function input(label, name, value, type = "text", extra = "") {
-  return `<label>${label}<input name="${esc(name)}" type="${type}" value="${esc(value)}" ${extra}></label>`;
+  return `<label>${label}<input name="${esc(name)}" type="${type}" value="${esc(value)}" ${type === "date" ? 'placeholder="YYYY-MM-DD"' : ""} ${extra}></label>`;
 }
 function area(label, name, value) {
   return `<label>${label}<textarea name="${esc(name)}">${esc(value)}</textarea></label>`;
@@ -243,7 +246,13 @@ function renderJob() {
         renderJob();
         jobMessage("Job saved on this device.");
       } else {
-        jobMessage("The job could not be saved. " + (blocked ? "Browser storage is blocked or unreadable here. Open the downloaded app in Chrome or Edge and use Backup & restore to recover saved data." : "Check the error message and try again."), true);
+        jobMessage(
+          "The job could not be saved. " +
+            (blocked
+              ? "Browser storage is blocked or unreadable here. Open the downloaded app in Chrome or Edge and use Backup & restore to recover saved data."
+              : "Check the error message and try again."),
+          true,
+        );
       }
     } catch (e) {
       jobMessage(e.message, true);
@@ -646,38 +655,106 @@ function printQuote() {
   document.querySelector(".print-only")?.remove();
   const q = document.createElement("section");
   q.className = "print-only";
-  q.innerHTML = `<div class="eyebrow">ALTERATIONS / MADE WITH CARE</div><div class="quote-brand" style="display:flex;align-items:center;justify-content:space-between"><h1>RokaWright</h1>${document.querySelector(".header-logo svg").outerHTML.replace('class="rw-monogram"', 'class="rw-monogram" style="width:65px;height:65px"')}</div><h2>${draft.kind} · ${esc(draft.reference)}</h2><p>Customer: ${esc(draft.customerName || "Quick quote")}<br>Created: ${draft.created}${draft.due ? "<br>Due: " + draft.due : ""}</p><table><thead><tr><th>Service</th><th>Qty</th><th>Unit price</th><th>Extra work (once)</th><th>Line total</th></tr></thead><tbody>${draft.lines.map((l) => `<tr><td>${esc(l.name)}${l.details ? "<br><small>" + esc(l.details) + "</small>" : ""}${l.extraNote ? "<br><small>Extra work: " + esc(l.extraNote) + "</small>" : ""}</td><td>${l.quantity}</td><td>${money(l.cents)}</td><td>${money(l.extraCents)}</td><td>${money(lineTotal(l))}</td></tr>`).join("")}</tbody></table><div class="quote-total"><p>Total: <b>${money(total(draft))}</b></p><p>Amount paid: ${money(paid(draft))}</p><p>${paid(draft) > total(draft) ? "Overpayment" : "Balance remaining"}: <b>${money(Math.abs(total(draft) - paid(draft)))}</b></p></div><p class="quote-note">Customers supply materials. Thank you for trusting RokaWright with your next piece.</p>`;
-  document.body.append(q);
+  q.innerHTML = `<div class="eyebrow">ALTERATIONS / MADE WITH CARE</div><div class="quote-brand" style="display:flex;align-items:center;justify-content:space-between"><h1>RokaWright</h1>${document.querySelector(".header-logo").innerHTML.replace('class="rw-monogram"', 'class="rw-monogram" style="width:65px;height:65px"')}</div><h2>${draft.kind} · ${esc(draft.reference)}</h2><p>Customer: ${esc(draft.customerName || "Quick quote")}<br>Created: ${draft.created}${draft.due ? "<br>Due: " + draft.due : ""}</p><table><thead><tr><th>Service</th><th>Qty</th><th>Unit price</th><th>Extra work (once)</th><th>Line total</th></tr></thead><tbody>${draft.lines.map((l) => `<tr><td>${esc(l.name)}${l.details ? "<br><small>" + esc(l.details) + "</small>" : ""}${l.extraNote ? "<br><small>Extra work: " + esc(l.extraNote) + "</small>" : ""}</td><td>${l.quantity}</td><td>${money(l.cents)}</td><td>${money(l.extraCents)}</td><td>${money(lineTotal(l))}</td></tr>`).join("")}</tbody></table><div class="quote-total"><p>Total: <b>${money(total(draft))}</b></p><p>Amount paid: ${money(paid(draft))}</p><p>${paid(draft) > total(draft) ? "Overpayment" : "Balance remaining"}: <b>${money(Math.abs(total(draft) - paid(draft)))}</b></p></div><p class="quote-note">Customers supply materials. Thank you for trusting RokaWright with your next piece.</p>`;
+  document.body.appendChild(q);
   document.querySelector("#quote-preview")?.remove();
   const preview = document.createElement("dialog");
   preview.id = "quote-preview";
-  preview.innerHTML = `<h2>Your printable quote</h2><p>Save PDF downloads a real PDF directly, without a print dialog. For paper printing, open the downloaded PDF in your browser and print it.</p><div class="actions"><button type="button" id="quote-print">Print / Save as PDF</button><button type="button" class="quiet" id="quote-download">Download printable quote</button><button type="button" class="quiet" id="quote-close">Close</button></div><p id="pdf-status" role="status"></p><div class="quote-sheet">${q.innerHTML}</div>`;
-  document.body.append(preview);
-  preview.showModal();
+  preview.innerHTML = `<h2>Your printable quote</h2><p>Save PDF downloads a real PDF directly, without a print dialog. For paper printing, open the downloaded PDF in your browser and print it.</p><div class="actions"><button type="button" id="quote-print">Print / Save as PDF</button><button type="button" class="quiet" id="quote-download">Download printable quote</button><button type="button" class="quiet" id="quote-full">View full quote</button><button type="button" class="quiet" id="quote-copy">Copy quote text</button><button type="button" class="quiet" id="quote-close">Close</button></div><p id="pdf-status" role="status"></p><div class="quote-sheet">${q.innerHTML}</div>`;
+  const quoteText =
+    `${draft.kind} · ${draft.reference}\nRokaWright\nCustomer: ${draft.customerName || "Quick quote"}\nCreated: ${draft.created}${draft.due ? "\nDue: " + draft.due : ""}\n\n` +
+    draft.lines
+      .map(
+        (l) =>
+          `${l.name}: ${l.quantity} × ${money(l.cents)}; extra work once ${money(l.extraCents)}; line total ${money(lineTotal(l))}${l.details ? "\n" + l.details : ""}${l.extraNote ? "\nExtra work: " + l.extraNote : ""}`,
+      )
+      .join("\n\n") +
+    `\n\nTotal: ${money(total(draft))}\nAmount paid: ${money(paid(draft))}\n${paid(draft) > total(draft) ? "Overpayment" : "Balance remaining"}: ${money(Math.abs(total(draft) - paid(draft)))}\nCustomers supply materials.`;
+  const readable = document.createElement("div");
+  readable.className = "quote-readable";
+  readable.innerHTML = draft.lines
+    .map(
+      (l) =>
+        `<div class="quote-item"><b>${esc(l.name)}</b><br>Quantity: ${l.quantity} · Unit: ${money(l.cents)}<br>Extra work (once): ${money(l.extraCents)}<br>Line total: ${money(lineTotal(l))}${l.details ? "<br>" + esc(l.details) : ""}${l.extraNote ? "<br>Extra work: " + esc(l.extraNote) : ""}</div>`,
+    )
+    .join("");
+  q.insertBefore(readable, q.querySelector(".quote-total"));
+  preview.querySelector(".quote-sheet").innerHTML = q.innerHTML;
+  document.body.appendChild(preview);
+  RokaCompat.showDialog(preview);
+  preview.querySelector("#quote-copy").onclick = () =>
+    RokaCompat.textAlternative(
+      quoteText,
+      "Copy your quote",
+      "Long-press and copy this customer-facing quote text, or take screenshots of View full quote. Internal notes and measurements are excluded. Print or create a PDF on a newer device.",
+    );
+  preview.querySelector("#quote-full").onclick = () => {
+    RokaCompat.closeDialog(preview);
+    document.body.className += " quote-view";
+    const controls = document.createElement("div");
+    controls.className = "quote-controls";
+    controls.innerHTML =
+      '<button type="button">Back to workroom</button><p>On browsers without printing: take screenshots or use Copy quote text. Open the app on a newer device to print.</p>';
+    controls.querySelector("button").onclick = () => {
+      document.body.className = document.body.className.replace(
+        /\s*quote-view\b/g,
+        "",
+      );
+      controls.remove();
+      window.scrollTo(0, 0);
+    };
+    q.insertBefore(controls, q.firstChild);
+    window.scrollTo(0, 0);
+  };
+  if (RokaCompat.legacy) {
+    preview.querySelector("#quote-print").hidden = true;
+    preview.querySelector("#quote-download").hidden = true;
+    preview.querySelector("p").textContent =
+      "This older-browser layout provides a full readable quote and copyable quote text. For a PDF or paper print, use a newer device. Backups can transfer your saved records privately.";
+  }
   preview.querySelector("#quote-close").onclick = () => {
-    preview.close();
+    RokaCompat.closeDialog(preview);
     preview.remove();
   };
   preview.querySelector("#quote-print").textContent = "Save PDF";
   preview.querySelector("#quote-print").onclick = async () => {
-    const button=preview.querySelector("#quote-print");button.disabled=true;button.textContent="Creating PDF…";
+    const button = preview.querySelector("#quote-print");
+    button.disabled = true;
+    button.textContent = "Creating PDF…";
     try {
-      await RokaPDF.downloadPDF(structuredClone(draft), document.querySelector('.header-logo svg').outerHTML);
-      preview.querySelector('#pdf-status').textContent='PDF download requested. Check your browser’s Downloads. If this preview blocks downloads, use the printable quote option below.';
-    } catch(e) { preview.querySelector('#pdf-status').textContent='Could not create the PDF: '+e.message; }
-    finally {button.disabled=false;button.textContent='Save PDF';}
+      await (
+        await RokaCompat.ensurePDF()
+      ).downloadPDF(
+        structuredClone(draft),
+        document.querySelector(".header-logo").innerHTML,
+      );
+      preview.querySelector("#pdf-status").textContent =
+        "PDF download requested. Check your browser’s Downloads. If this preview blocks downloads, use the printable quote option below.";
+    } catch (e) {
+      preview.querySelector("#pdf-status").textContent =
+        "Could not create the PDF: " + e.message;
+    } finally {
+      button.disabled = false;
+      button.textContent = "Save PDF";
+    }
   };
   preview.querySelector("#quote-download").onclick = () => {
     const html = `<!doctype html><html lang="en"><meta charset="utf-8"><title>RokaWright quote</title><style>body{font:14px Arial;color:#272923;max-width:900px;margin:40px auto;padding:25px}h1{font:40px Georgia}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px 6px;border-bottom:1px solid #ccc}.quote-total{text-align:right}.quote-note{margin-top:30px}button{padding:12px;background:#414b36;color:white;border:0}@media print{button,.instructions{display:none}@page{margin:18mm}}</style><button onclick="window.print()">Print / Save as PDF</button><p class="instructions">Choose “Save as PDF” in the print dialog.</p>${q.innerHTML}</html>`;
-    const url = URL.createObjectURL(new Blob([html], { type: "text/html" }));
-    const a = document.createElement("a");
-    a.href = url;
-    a.download =
-      "RokaWright-quote-" +
-      draft.reference.replace(/[^a-zA-Z0-9_-]/g, "") +
-      ".html";
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    if (
+      typeof Blob === "undefined" ||
+      !RokaCompat.saveBlob(
+        new Blob([html], { type: "text/html" }),
+        "RokaWright-quote-" +
+          draft.reference.replace(/[^a-zA-Z0-9_-]/g, "") +
+          ".html",
+      )
+    ) {
+      RokaCompat.textAlternative(
+        quoteText,
+        "Copy your quote",
+        "File downloads are unavailable. Copy this quote text or take screenshots of View full quote.",
+      );
+    }
   };
 }
 document.querySelectorAll("nav button").forEach(
@@ -687,20 +764,37 @@ document.querySelectorAll("nav button").forEach(
       render();
     }),
 );
-$("#backup-open").onclick = () => $("#backup").showModal();
-$("#backup-close").onclick = () => $("#backup").close();
+$("#backup-open").onclick = () => RokaCompat.showDialog($("#backup"));
+$("#backup-close").onclick = () => RokaCompat.closeDialog($("#backup"));
 $("#export").onclick = () => {
-  const raw = blocked
-    ? localStorage.getItem(KEY)
-    : JSON.stringify(data, null, 2);
-  const url = URL.createObjectURL(
-    new Blob([raw || ""], { type: "application/json" }),
-  );
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "RokaWright-backup-" + today() + ".json";
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  try {
+    const raw = blocked
+      ? localStorage.getItem(KEY)
+      : JSON.stringify(data, null, 2);
+    RokaCompat.saveText(
+      raw || "",
+      "RokaWright-backup-" + today() + ".json",
+      "application/json",
+    );
+  } catch (e) {
+    $("#backup-message").textContent =
+      "Could not access saved data: " + e.message;
+  }
+};
+$("#export-copy").onclick = () => {
+  try {
+    const raw = blocked
+      ? localStorage.getItem(KEY)
+      : JSON.stringify(data, null, 2);
+    RokaCompat.textAlternative(
+      raw || "",
+      "Copy your backup",
+      "Select all, then long-press and copy. Save the complete text privately on your device or transfer it to your own newer device. Restore with Paste backup text.",
+    );
+  } catch (e) {
+    $("#backup-message").textContent =
+      "Could not access saved data: " + e.message;
+  }
 };
 $("#import").onchange = async (e) => {
   pending = null;
@@ -710,9 +804,23 @@ $("#import").onchange = async (e) => {
     if (!file) return;
     if (file.size > 10000000)
       throw Error("Backup is too large (maximum 10 MB).");
-    pending = validate(JSON.parse(await file.text()));
+    pending = validate(JSON.parse(await RokaCompat.readFile(file)));
     $("#backup-message").textContent =
       `Validated: ${pending.customers.length} customers, ${pending.jobs.length} jobs, ${pending.services.length} services. Restoring replaces all saved data on this device. Download a backup first.`;
+    $("#restore").hidden = false;
+  } catch (e) {
+    $("#backup-message").textContent = "Cannot restore: " + e.message;
+  }
+};
+$("#validate-pasted-backup").onclick = () => {
+  pending = null;
+  $("#restore").hidden = true;
+  try {
+    const text = $("#pasted-backup").value;
+    if (text.length > 10000000) throw Error("Backup is too large.");
+    pending = validate(JSON.parse(text));
+    $("#backup-message").textContent =
+      `Validated: ${pending.customers.length} customers, ${pending.jobs.length} jobs, ${pending.services.length} services. Restoring replaces only compatibility-preview data. Download or copy a backup first.`;
     $("#restore").hidden = false;
   } catch (e) {
     $("#backup-message").textContent = "Cannot restore: " + e.message;
@@ -735,7 +843,7 @@ $("#restore").onclick = async () => {
     dirty = false;
     customerEdit = null;
     $("#restore").hidden = true;
-    $("#backup").close();
+    RokaCompat.closeDialog($("#backup"));
     render();
     toast("Backup restored successfully.");
   } catch (e) {
@@ -748,9 +856,16 @@ if (blocked)
     "Existing saved data could not be read. It has NOT been overwritten. Use Backup & restore to recover it.",
   );
 
-document.querySelector(".brand").onclick = e => {
+document.querySelector(".brand").onclick = (e) => {
   e.preventDefault();
-  document.querySelectorAll('dialog[open]').forEach(d=>d.close());
-  view="new"; render();
-  window.scrollTo({top:0,behavior:'instant'});
+  document
+    .querySelectorAll("dialog[open]")
+    .forEach((d) => RokaCompat.closeDialog(d));
+  view = "new";
+  render();
+  window.scrollTo(0, 0);
+  document.body.className = document.body.className.replace(
+    /\s*quote-view\b/g,
+    "",
+  );
 };

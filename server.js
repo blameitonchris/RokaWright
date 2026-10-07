@@ -9,7 +9,7 @@ http
         new URL(req.url, "http://localhost").pathname,
       );
       if (
-        !["/", "/index.html", "/style.css", "/app.js", "/core.js", "/pdf-library.js"].includes(
+        !["/", "/index.html", "/style.css", "/app.js", "/core.js", "/pdf-library.js", "/app-compat.js", "/style-compat.css"].includes(
           pathname,
         )
       )

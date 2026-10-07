@@ -9,3 +9,5 @@ dist/
 RokaWright-backup-*.json
 private-data/
 attachments/
+
+dist-compat/

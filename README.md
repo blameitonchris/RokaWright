@@ -1,3 +1,5 @@
+> Android compatibility preview: see [COMPATIBILITY.md](COMPATIBILITY.md) for the separate link, isolated test storage, tablet checklist, and limits. The approved production release remains unchanged.
+
 # RokaWright
 
 A private, device-local workroom for a home sewing business: quotes, customers, measurements, job tracking, prices, and payments. Cream, charcoal, olive, and brass styling adapts to phones and computers.

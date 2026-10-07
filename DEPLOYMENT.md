@@ -1,3 +1,5 @@
+> This branch is an unapproved Android compatibility preview. Follow `COMPATIBILITY.md` and publish only into `compatibility/`; do not replace root files or merge to main yet.
+
 # Publish RokaWright with GitHub Pages
 
 This app is a static website. GitHub Pages should publish the `gh-pages` branch, root folder. That branch contains only the public files built by `npm run build`, never customers, backups, tests, or server files.

@@ -7,13 +7,22 @@
     "start": "node server.js",
     "test": "node --test tests/*.test.js",
     "test:browser": "playwright test",
-    "build:standalone": "npm run build:pdf && node scripts/build-standalone.js",
-    "build:pdf": "esbuild scripts/pdf-entry.js --bundle --minify --format=iife --global-name=RokaPDF --outfile=pdf-library.js",
-    "build": "npm run build:pdf && node scripts/build-site.js"
+    "build:standalone": "npm run build:pdf && npm run build:compat && node scripts/build-standalone.js",
+    "build:pdf": "node scripts/build-pdf.js",
+    "build": "npm run build:pdf && npm run build:compat && node scripts/build-site.js",
+    "build:compat": "node scripts/build-compat.js"
   },
   "devDependencies": {
+    "@babel/core": "^8.0.7",
+    "@babel/preset-env": "^8.0.7",
     "@playwright/test": "^1.58.2",
-    "esbuild": "^0.28.2"
+    "acorn": "^8.19.0",
+    "core-js": "^3.50.0",
+    "esbuild": "^0.28.2",
+    "postcss": "^8.5.29",
+    "postcss-custom-properties": "^15.0.4",
+    "postcss-discard-comments": "^9.0.6",
+    "terser": "^5.51.2"
   },
   "dependencies": {
     "jspdf": "^4.2.1",

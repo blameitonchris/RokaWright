@@ -1,3 +1,5 @@
 # Generated bundles contain third-party license comments and literal whitespace.
 pdf-library.js whitespace=-blank-at-eol,-blank-at-eof
 RokaWright.html whitespace=-blank-at-eol,-blank-at-eof
+
+app-compat.js whitespace=-blank-at-eol,-blank-at-eof
