@@ -52,3 +52,7 @@ On the original `compatibility/android-4` branch, build with `npm run build`; ou
 ## Sales / stock review
 
 The separate tablet sales preview is at `compatibility-sales-preview/` and uses the shared feature engine on branch `feature/sales-stock`. It does not replace this compatibility release. See the README’s “Sales and stock review previews” for storage transfer, validation, refund semantics and actual-tablet testing. New report tables scroll inside their panel; legacy chart bars use block layout and exact tabular alternatives. New action controls use explicit click handlers rather than relying on native form submission. CSV and report text use the existing copyable-text fallback. Review these new screens on the real Android 4.2.2 tablet before promoting them.
+
+## Offline test status
+
+Offline work is isolated on `feature/tablet-offline-preview` and `/compatibility-offline-preview/`; this published compatibility release is unchanged. The friend reconfirmed Chrome 71 and Opera 50.5. This makes a verified service-worker trial reasonable, subject to feature checks and actual-device testing, without assuming modern PWA installation. See [OFFLINE.md](OFFLINE.md) for preparation, backups, guarded updates, six tablet test steps, storage/download/printing limits and the SDK-17 APK fallback proposal.

@@ -213,5 +213,10 @@ export function salesScreens(c) {
     }
     editing=null; return true;
   }
-  return {renderSales,renderStock,recordJob,dashboard};
+  function hasUnsavedChanges() {
+    if (!editing) return false;
+    try { if ($('#sale-form')) capture(); return JSON.stringify(editing)!==JSON.stringify(get().sales.find(s=>s.id===editing.id)); }
+    catch(e) { return true; }
+  }
+  return {renderSales,renderStock,recordJob,dashboard,hasUnsavedChanges};
 }

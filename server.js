@@ -8,18 +8,22 @@ http
       const pathname = decodeURIComponent(
         new URL(req.url, "http://localhost").pathname,
       );
+      const offlinePath = pathname.startsWith('/compatibility-offline-preview/') ? pathname.slice('/compatibility-offline-preview/'.length) : null;
+      const offlineFile = offlinePath === '' ? 'index.html' : offlinePath;
+      const offlineAllowed = offlineFile !== null && /^(index\.html|offline-worker\.js|workroom\.[a-f0-9]{16}\.html|(app|style|pdf|offline-client)\.[a-f0-9]{16}\.(js|css))$/.test(offlineFile);
       if (
-        !["/", "/index.html", "/style.css", "/app.js", "/core.js", "/sales-core.js", "/sales-ui.js", "/pdf-library.js", "/app-compat.js", "/style-compat.css"].includes(
+        !offlineAllowed && !["/", "/index.html", "/style.css", "/app.js", "/core.js", "/sales-core.js", "/sales-ui.js", "/pdf-library.js", "/app-compat.js", "/style-compat.css"].includes(
           pathname,
         )
       )
         throw Error();
       const file = path.resolve(
         root,
-        "." + (pathname === "/" ? "/index.html" : pathname),
+        offlineAllowed ? "dist-offline/" + offlineFile : "." + (pathname === "/" ? "/index.html" : pathname),
       );
       if (!file.startsWith(root + path.sep)) throw Error();
       const data = await readFile(file);
+      res.setHeader("Cache-Control", "no-cache");
       res.setHeader(
         "Content-Type",
         { ".html": "text/html", ".css": "text/css", ".js": "text/javascript" }[

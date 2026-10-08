@@ -202,7 +202,7 @@ function ensurePDF() {
       else reject(Error("PDF tools could not start."));
       return;
     }
-    script.src = "pdf-library.js";
+    script.src = window.ROKA_PDF_URL || "pdf-library.js";
     script.onload = function () {
       if (window.RokaPDF) resolve(window.RokaPDF);
       else reject(Error("PDF library could not start."));

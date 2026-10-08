@@ -29,3 +29,7 @@ A deployment is complete only after the live page and important workflows have b
 ## Sales review releases
 
 Build with `npm run build` on `feature/sales-stock`. Publish `dist-sales/` only to `gh-pages:sales-preview/` and `dist-compat-sales/` only to `gh-pages:compatibility-sales-preview/`. Verify every existing root and `compatibility/` file is byte-for-byte unchanged before pushing. The build permits only HTML, compiled CSS, compiled JS, PDF library and `.nojekyll`; do not copy backups, fixtures, attachments, browser storage, logs or environment files. Do not merge to `main` or `compatibility/android-4`, or replace either existing Pages path, until the user approves the reviewed previews.
+
+## Offline experiment: publish test path only
+
+For `feature/tablet-offline-preview`, publish only the `build:offline` allowlisted output under `compatibility-offline-preview/`. The worker's default and explicit scope must remain that exact directory. Preserve root, `compatibility/`, sales preview paths and both original source branches. Build an initial release in a fresh output directory; retain previous immutable public assets on subsequent updates. `index.html` and `offline-worker.js` may change only inside the test path. Never publish records/backups/browser profiles. See OFFLINE.md for lifecycle, update guards, actual-device verification and native-APK fallback requirements.

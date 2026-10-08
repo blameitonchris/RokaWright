@@ -899,3 +899,16 @@ document.querySelector(".brand").onclick = (e) => {
     "",
   );
 };
+
+// Read-only hooks for the isolated offline preview's safe-update controls.
+window.RokaWorkroom = {
+  storageReadable: () => !blocked,
+  hasUnsavedChanges: () => {
+    if (dirty || sales.hasUnsavedChanges()) return true;
+    return Array.from(document.querySelectorAll('#customer-form input, #customer-form textarea, #customer-form select, #product-form input, [name^="movement-"]')).some(el => {
+      if (el.tagName === 'SELECT') { const options=Array.from(el.options); const initial=options.find(o=>o.defaultSelected) || options[0]; return !!initial && el.value !== initial.value; }
+      return el.value !== el.defaultValue;
+    });
+  },
+  confirm: askConfirm,
+};

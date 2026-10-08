@@ -10,7 +10,8 @@
     "build:standalone": "npm run build:pdf && npm run build:compat && node scripts/build-standalone.js",
     "build:pdf": "node scripts/build-pdf.js",
     "build": "npm run build:pdf && npm run build:compat && node scripts/build-site.js",
-    "build:compat": "node scripts/build-compat.js"
+    "build:compat": "node scripts/build-compat.js",
+    "build:offline": "npm run build:pdf && npm run build:compat && node scripts/build-offline.js"
   },
   "devDependencies": {
     "@babel/core": "^8.0.7",
