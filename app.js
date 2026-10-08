@@ -1,3 +1,4 @@
+import { salesScreens } from "./sales-ui.js";
 import {
   fresh,
   validate,
@@ -32,9 +33,11 @@ const KEY = window.ROKA_STORAGE_KEY || "rokawright.v1",
         })[c],
     );
 let data,
-  blocked = false;
+  blocked = false,
+  storageRaw = null;
 try {
   const raw = localStorage.getItem(KEY);
+  storageRaw = raw;
   data = raw ? validate(JSON.parse(raw)) : fresh();
 } catch {
   data = fresh();
@@ -123,17 +126,35 @@ function persist(next) {
     throw Error(
       "Saved data could not be read. Download the original data before restoring a valid backup.",
     );
-  validate(next);
-  localStorage.setItem(KEY, JSON.stringify(next));
+  if (localStorage.getItem(KEY) !== storageRaw)
+    throw Error("Records changed in another tab. Reload before saving to avoid replacing newer records. Copy your unsaved changes first.");
+  next = validate(next);
+  const raw = JSON.stringify(next);
+  localStorage.setItem(KEY, raw);
+  storageRaw = raw;
+  if (dirty && draft) {
+    const updated = next.jobs.find(j => j.id === draft.id);
+    if (updated) draft.payments.forEach(p => {
+      const newPayment = updated.payments.find(x => x.id === p.id);
+      if (!p.date && newPayment && newPayment.date) p.date = newPayment.date;
+    });
+  }
   data = next;
+  if (!dirty && draft) {
+    const current = next.jobs.find(j => j.id === draft.id);
+    if (current) draft = structuredClone(current);
+  }
 }
+let saveError = "";
 function commit(fn) {
+  saveError = "";
   try {
     const next = structuredClone(data);
     fn(next);
     persist(next);
     return true;
   } catch (e) {
+    saveError = e.message;
     toast("Could not save: " + e.message);
     return false;
   }
@@ -166,6 +187,8 @@ function measurementFields(m, prefix) {
     )
     .join("")}</div>`;
 }
+const sales = salesScreens({ $, esc, input, area, select, intro, id, today, commit, toast, askConfirm,
+  data: () => data, error: () => saveError, show: (nextView) => { view = nextView; render(); } });
 function render() {
   document.querySelector("#storage-warning")?.remove();
   if (blocked) {
@@ -184,6 +207,8 @@ function render() {
   if (view === "customers") renderCustomers();
   if (view === "jobs") renderJobs();
   if (view === "prices") renderPrices();
+  if (view === "sales") sales.renderSales();
+  if (view === "stock") sales.renderStock();
 }
 function renderJob() {
   const exists = data.jobs.some((j) => j.id === draft.id);
@@ -205,7 +230,7 @@ function renderJob() {
       "status",
       draft.status,
       statuses.map((s) => [s, s]),
-    )}${input("Due date (optional)", "due", draft.due, "date")}${input("Job reference", "reference", draft.reference, "text", 'required maxlength="100"')}</div><p class="hint">Created ${esc(draft.created)} · Customers supply materials. No material charge is added.</p>${area("Customer instructions (internal)", "instructions", draft.instructions)}${area("Workroom notes (internal)", "notes", draft.notes)}<details><summary>Job measurements · saved copy, for internal use</summary><p class="hint">This copy stays with the job when the customer’s measurements change. Switching units converts existing measurements.</p>${measurementFields(draft.measurements, "m:")}</details></section><section class="panel"><div class="panel-title"><h2>Choose your services</h2><span class="number">02 / THE WORK</span></div><div class="cards">${data.services.map((s, i) => `<button type="button" class="service" data-add="${s.id}"><i>${["⌁", "+", "◇"][i % 3]}</i><b>${esc(s.name)}</b><span>${s.cents === null ? "Enter a custom price" : money(s.cents) + (s.id === "service-0" ? " per pair" : s.id === "service-1" ? " / both pockets" : s.id === "service-2" ? " per shirt" : " each")}</span></button>`).join("")}</div><button type="button" class="quiet" id="custom">+ Add a custom service</button><p class="hint">Pants and shirt alterations are priced per garment, with all adjustments bundled. Pockets are a separate service. Extra-work charges are added once per line.</p><div id="lines">${draft.lines.length ? draft.lines.map((l) => `<div class="line" data-line="${l.id}"><div class="line-head"><label style="flex:1;margin:0">Service description<input name="l:${l.id}:name" value="${esc(l.name)}" required></label><button type="button" class="quiet small" data-remove="${l.id}" aria-label="Remove service">✕</button></div><div class="line-grid">${input("Unit price ($)", "l:" + l.id + ":cents", l.cents === null ? "" : (l.cents / 100).toFixed(2), "number", 'min="0" step="0.01" required')}${input("Quantity", "l:" + l.id + ":quantity", l.quantity, "number", 'min="1" max="100000" step="1" required')}${input("Extra work ($, total for this line)", "l:" + l.id + ":extraCents", (l.extraCents / 100).toFixed(2), "number", 'min="0" step="0.01" required')}</div>${input("Extra-work explanation", "l:" + l.id + ":extraNote", l.extraNote)}${input("Adjustments / service details (bundled, no automatic charge)", "l:" + l.id + ":details", l.details)}<div class="sum-row"><span>Line total</span><strong data-line-total="${l.id}">${l.cents === null ? "Price required" : money(lineTotal(l))}</strong></div></div>`).join("") : '<div class="empty">Your work starts with a service.<br>Choose a card above to add it to the job.</div>'}</div></section><section class="panel"><div class="panel-title"><h2>Payments</h2><span class="number">03 / THE LEDGER</span></div>${draft.payments.map((p) => `<div class="payment"><span>${esc(p.date)} · ${esc(p.note || "Payment")} <b>${money(p.cents)}</b></span><button type="button" class="quiet small" data-payment-remove="${p.id}">Remove</button></div>`).join("") || '<p class="muted">No payments recorded yet.</p>'}<div class="fields">${input("Deposit / additional payment ($)", "paymentAmount", "", "number", 'min="0.01" step="0.01"')}${input("Payment date", "paymentDate", today(), "date")}${input("Payment note", "paymentNote", "")}</div><button type="button" id="add-payment">Record payment</button><p class="hint">Save the job to keep payment changes.</p></section></div><aside class="summary"><div class="eyebrow">A JOB WELL MADE</div><h2>Your quote</h2><div id="summary"></div><button type="button" id="save-job">${exists ? "Save changes" : "Save quote / job"}</button><button type="button" class="quiet" id="print">Print / Save as PDF</button><button type="button" class="quiet" id="clear-job">Start a new job</button><p class="hint">Preview your quote, then choose Save PDF to download it directly. Open the PDF in your browser to print. Internal notes and measurements are never included.</p><p class="hint">${exists ? "Editing a saved record." : "This quote is not saved yet."}</p></aside></div></form>`;
+    )}${input("Due date (optional)", "due", draft.due, "date")}${input("Job reference", "reference", draft.reference, "text", 'required maxlength="100"')}</div><p class="hint">Created ${esc(draft.created)} · Customers supply materials. No material charge is added.</p>${area("Customer instructions (internal)", "instructions", draft.instructions)}${area("Workroom notes (internal)", "notes", draft.notes)}<details><summary>Job measurements · saved copy, for internal use</summary><p class="hint">This copy stays with the job when the customer’s measurements change. Switching units converts existing measurements.</p>${measurementFields(draft.measurements, "m:")}</details></section><section class="panel"><div class="panel-title"><h2>Choose your services</h2><span class="number">02 / THE WORK</span></div><div class="cards">${data.services.map((s, i) => `<button type="button" class="service" data-add="${s.id}"><i>${["⌁", "+", "◇"][i % 3]}</i><b>${esc(s.name)}</b><span>${s.cents === null ? "Enter a custom price" : money(s.cents) + (s.id === "service-0" ? " per pair" : s.id === "service-1" ? " / both pockets" : s.id === "service-2" ? " per shirt" : " each")}</span></button>`).join("")}</div><button type="button" class="quiet" id="custom">+ Add a custom service</button><p class="hint">Pants and shirt alterations are priced per garment, with all adjustments bundled. Pockets are a separate service. Extra-work charges are added once per line.</p><div id="lines">${draft.lines.length ? draft.lines.map((l) => `<div class="line" data-line="${l.id}"><div class="line-head"><label style="flex:1;margin:0">Service description<input name="l:${l.id}:name" value="${esc(l.name)}" required></label><button type="button" class="quiet small" data-remove="${l.id}" aria-label="Remove service">✕</button></div><div class="line-grid">${input("Unit price ($)", "l:" + l.id + ":cents", l.cents === null ? "" : (l.cents / 100).toFixed(2), "number", 'min="0" step="0.01" required')}${input("Quantity", "l:" + l.id + ":quantity", l.quantity, "number", 'min="1" max="100000" step="1" required')}${input("Extra work ($, total for this line)", "l:" + l.id + ":extraCents", (l.extraCents / 100).toFixed(2), "number", 'min="0" step="0.01" required')}</div>${input("Extra-work explanation", "l:" + l.id + ":extraNote", l.extraNote)}${input("Adjustments / service details (bundled, no automatic charge)", "l:" + l.id + ":details", l.details)}<div class="sum-row"><span>Line total</span><strong data-line-total="${l.id}">${l.cents === null ? "Price required" : money(lineTotal(l))}</strong></div></div>`).join("") : '<div class="empty">Your work starts with a service.<br>Choose a card above to add it to the job.</div>'}</div></section><section class="panel"><div class="panel-title"><h2>Payments</h2><span class="number">03 / THE LEDGER</span></div>${draft.payments.map((p) => `<div class="payment"><span>${esc(p.date || "Undated — excluded from dated sales reports; add its actual date in Sales") } · ${esc(p.note || "Payment")} <b>${money(p.cents)}</b></span><button type="button" class="quiet small" data-payment-remove="${p.id}">Remove</button></div>`).join("") || '<p class="muted">No payments recorded yet.</p>'}<div class="fields">${input("Deposit / additional payment ($)", "paymentAmount", "", "number", 'min="0.01" step="0.01"')}${input("Payment date", "paymentDate", today(), "date")}${input("Payment note", "paymentNote", "")}</div><button type="button" id="add-payment">Record payment</button><p class="hint">Save the job to keep payment changes.</p></section></div><aside class="summary"><div class="eyebrow">A JOB WELL MADE</div><h2>Your quote</h2><div id="summary"></div><button type="button" id="save-job">${exists ? "Save changes" : "Save quote / job"}</button><button type="button" class="quiet" id="print">Print / Save as PDF</button><button type="button" class="quiet" id="clear-job">Start a new job</button><p class="hint">Preview your quote, then choose Save PDF to download it directly. Open the PDF in your browser to print. Internal notes and measurements are never included.</p><p class="hint">${exists ? "Editing a saved record." : "This quote is not saved yet."}</p></aside></div></form>`;
   updateSummary();
   const form = $("#job-form");
   form.addEventListener("input", () => {
@@ -555,7 +580,7 @@ function renderJobs() {
         )
         .map(
           (j) =>
-            `<article class="record"><div class="sum-row"><span class="eyebrow">${esc(j.reference)} · ${j.kind}</span><span class="status">${j.status}</span></div><h3>${esc(j.customerName || "Quick quote")}</h3><p class="muted">Created ${j.created}${j.due ? " · Due " + j.due : ""}</p>${j.due && j.due < today() && j.status !== "Collected" ? '<p class="overdue">Overdue · not collected</p>' : ""}<div class="sum-row"><b>${money(total(j))}</b><span>${paid(j) > total(j) ? "Overpaid " + money(paid(j) - total(j)) : "Balance " + money(total(j) - paid(j))}</span></div><div class="actions"><button data-open="${j.id}" class="small">Open / edit</button><button data-job-delete="${j.id}" class="danger small">Delete</button></div></article>`,
+            `<article class="record"><div class="sum-row"><span class="eyebrow">${esc(j.reference)} · ${j.kind}</span><span class="status">${j.status}</span></div><h3>${esc(j.customerName || "Quick quote")}</h3><p class="muted">Created ${j.created}${j.due ? " · Due " + j.due : ""}</p>${j.due && j.due < today() && j.status !== "Collected" ? '<p class="overdue">Overdue · not collected</p>' : ""}<div class="sum-row"><b>${money(total(j))}</b><span>${paid(j) > total(j) ? "Overpaid " + money(paid(j) - total(j)) : "Balance " + money(total(j) - paid(j))}</span></div><div class="actions"><button data-open="${j.id}" class="small">Open / edit</button><button type="button" data-record-sale="${j.id}" class="small quiet">${data.sales.some(s => s.jobId === j.id) ? "View linked sale" : "Record sale"}</button><button data-job-delete="${j.id}" class="danger small">Delete</button></div></article>`,
         )
         .join("") ||
       '<p class="empty">No saved jobs match. Start with a new quote.</p>';
@@ -572,9 +597,11 @@ function renderJobs() {
           render();
         }),
     );
+    document.querySelectorAll("[data-record-sale]").forEach(b => b.onclick = () => sales.recordJob(b.dataset.recordSale));
     document.querySelectorAll("[data-job-delete]").forEach(
       (b) =>
         (b.onclick = async () => {
+          if (data.sales.some(s => s.jobId === b.dataset.jobDelete)) { toast("This job has a linked sale. Keep the original job to preserve its payment history."); return; }
           if (
             (await askConfirm(
               "Permanently delete this saved job and its payments?",
@@ -760,6 +787,7 @@ function printQuote() {
 document.querySelectorAll("nav button").forEach(
   (b) =>
     (b.onclick = async () => {
+      if (b.dataset.view === "sales" && !(await sales.dashboard())) return;
       view = b.dataset.view;
       render();
     }),
@@ -806,7 +834,7 @@ $("#import").onchange = async (e) => {
       throw Error("Backup is too large (maximum 10 MB).");
     pending = validate(JSON.parse(await RokaCompat.readFile(file)));
     $("#backup-message").textContent =
-      `Validated: ${pending.customers.length} customers, ${pending.jobs.length} jobs, ${pending.services.length} services. Restoring replaces all saved data on this device. Download a backup first.`;
+      `Validated: ${pending.customers.length} customers, ${pending.jobs.length} jobs, ${pending.services.length} services, ${pending.sales.length} sales, ${pending.products.length} products, ${pending.movements.length} stock entries. Restoring replaces all saved data on this device. Download a backup first.`;
     $("#restore").hidden = false;
   } catch (e) {
     $("#backup-message").textContent = "Cannot restore: " + e.message;
@@ -820,7 +848,7 @@ $("#validate-pasted-backup").onclick = () => {
     if (text.length > 10000000) throw Error("Backup is too large.");
     pending = validate(JSON.parse(text));
     $("#backup-message").textContent =
-      `Validated: ${pending.customers.length} customers, ${pending.jobs.length} jobs, ${pending.services.length} services. Restoring replaces only compatibility-preview data. Download or copy a backup first.`;
+      `Validated: ${pending.customers.length} customers, ${pending.jobs.length} jobs, ${pending.services.length} services, ${pending.sales.length} sales, ${pending.products.length} products, ${pending.movements.length} stock entries. Restoring replaces only this preview’s data. Download or copy a backup first.`;
     $("#restore").hidden = false;
   } catch (e) {
     $("#backup-message").textContent = "Cannot restore: " + e.message;
@@ -830,12 +858,14 @@ $("#restore").onclick = async () => {
   if (
     !pending ||
     !(await askConfirm(
-      "Replace ALL saved customers, jobs, and prices with this backup? This cannot be undone without your current backup.",
+      "Replace ALL saved customers, jobs, prices, sales, payments and stock with this backup? This cannot be undone without your current backup.",
     ))
   )
     return;
   try {
-    localStorage.setItem(KEY, JSON.stringify(pending));
+    const restoredRaw = JSON.stringify(pending);
+    localStorage.setItem(KEY, restoredRaw);
+    storageRaw = restoredRaw;
     data = pending;
     blocked = false;
     pending = null;

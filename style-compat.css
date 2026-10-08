@@ -992,3 +992,39 @@ dialog:not([open]) {
 [hidden] {
   display: none !important;
 }
+nav { flex-wrap: wrap; }
+.report-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0; }
+.report-metrics > div { background: #f0eddf; padding: 18px; border-radius: 4px; }
+.report-metrics span { display: block; font-size: 12px; color: #676b60; }
+.report-metrics strong { display: block; margin-top: 8px; font: 28px Georgia, serif; }
+.table-scroll { max-width: 100%; overflow-x: auto; margin: 18px 0; -webkit-overflow-scrolling: touch; }
+.sales-table { border-collapse: collapse; width: 100%; font-size: 13px; }
+.sales-table th, .sales-table td { text-align: left; padding: 12px 10px; border-bottom: 1px solid #ddd8cc; border-bottom: 1px solid var(--line); }
+.sales-table th { color: #414b36; color: var(--olive); }
+.sales-chart { margin: 20px 0; }
+.chart-row { display: flex; align-items: center; gap: 12px; margin: 8px 0; font-size: 12px; }
+.chart-row > span { width: 90px; flex-shrink: 0; }
+.chart-row > b { width: 100px; text-align: right; flex-shrink: 0; }
+.chart-track { flex: 1; background: #ece8dc; min-width: 20px; height: 16px; }
+.chart-bar { height: 16px; background: #414b36; background: var(--olive); }
+#sales-message { color: #9b3d32; line-height: 1.6; }
+.report-dialog { max-width: 850px; }
+.legacy-layout .report-metrics { display: block; }
+.legacy-layout .report-metrics > div { display: inline-block; vertical-align: top; width: 30%; margin: 0 2% 12px 0; }
+.legacy-layout .chart-row { display: block; margin: 18px 0; }
+.legacy-layout .chart-row > span, .legacy-layout .chart-row > b { display: inline-block; text-align: left; width: auto; margin-right: 12px; }
+.legacy-layout .chart-track { display: block; margin: 6px 0; width: 100%; }
+.legacy-layout .sales-print table { display: table; }
+@media (max-width: 600px) {
+  .report-metrics { grid-template-columns: repeat(2, 1fr); }
+  .legacy-layout .report-metrics > div { width: 46%; }
+  .report-metrics strong { font-size: 23px; }
+  .chart-row { gap: 6px; }
+  .chart-row > b { width: 80px; }
+}
+@media print {
+  .sales-print .table-scroll { overflow: visible; }
+  .sales-print .sales-table { font-size: 10px; }
+  .sales-print details > summary { display: none; }
+  .sales-print .sales-chart, .sales-print .quote-controls { display: none; }
+}

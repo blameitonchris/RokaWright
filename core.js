@@ -1,3 +1,4 @@
+import { validateSales } from "./sales-core.js";
 export const defaults = [
   ["Alter pants", 500],
   ["Add both pockets to pants", 500],
@@ -63,7 +64,10 @@ export const money = (c) => {
   );
 };
 export const fresh = () => ({
-  version: 1,
+  version: 2,
+  sales: [],
+  products: [],
+  movements: [],
   customers: [],
   jobs: [],
   services: structuredClone(defaults),
@@ -71,7 +75,7 @@ export const fresh = () => ({
 export function validate(data) {
   const fail = () => {
     throw Error(
-      "This file is not a valid RokaWright version 1 backup. No data was replaced.",
+      "This file is not a valid RokaWright backup (version 1 or 2). No data was replaced.",
     );
   };
   const str = (v) => typeof v === "string" && v.length <= 20000;
@@ -110,7 +114,14 @@ export function validate(data) {
         (v === "" ||
           (/^\d+(\.\d{1,2})?$/.test(v) && Number(v) > 0 && Number(v) <= 1000)),
     );
-  if (!data || data.version !== 1) fail();
+  if (!data || ![1, 2].includes(data.version)) fail();
+  // Validate a copy so even a failed import never mutates the caller's records.
+  data = JSON.parse(JSON.stringify(data));
+  if (data.version === 1) {
+    if (data.sales || data.products || data.movements) fail();
+    data.version = 2;
+    data.sales = []; data.products = []; data.movements = [];
+  }
   list(
     data.services,
     (s) => str(s.name) && s.name.trim() && (s.cents === null || cash(s.cents)),
@@ -156,7 +167,10 @@ export function validate(data) {
     );
     list(
       j.payments,
-      (p) => cash(p.cents) && p.cents > 0 && date(p.date) && str(p.note),
+      (p) => {
+        if (p.date === undefined || p.date === null) p.date = "";
+        return cash(p.cents) && p.cents > 0 && (p.date === "" || date(p.date)) && str(p.note);
+      },
     );
     if (
       !Number.isSafeInteger(j.lines.reduce((n, l) => n + lineTotal(l), 0)) ||
@@ -165,5 +179,6 @@ export function validate(data) {
       return false;
     return true;
   });
+  validateSales(data);
   return data;
 }

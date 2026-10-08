@@ -1,4 +1,4 @@
-> This branch is an unapproved Android compatibility preview. Follow `COMPATIBILITY.md` and publish only into `compatibility/`; do not replace root files or merge to main yet.
+> This branch is a sales/stock review. Publish only into `sales-preview/` and `compatibility-sales-preview/`. Do not replace root or `compatibility/` files, or merge to either original source branch.
 
 # Publish RokaWright with GitHub Pages
 
@@ -18,8 +18,12 @@ If Pages requires a plan upgrade for a private repository, do not make the repos
 
 ## Release checks
 
-Run `npm ci`, `npm run build`, `npm test`, and `npm run test:browser`. The build uses an explicit asset allowlist and refuses unexpected files in `dist/`. Only the contents of `dist/` belong on the Pages branch. Do not upload the entire project folder, browser profile, or test output.
+Run `npm ci`, `npm run build`, `npm test`, and `npm run test:browser`. The build uses an explicit asset allowlist and refuses unexpected files in `dist-sales/` and `dist-compat-sales/`. Copy their contents only into the matching review subdirectories on the Pages branch. Do not upload the entire project folder, browser profile, or test output.
 
 No customer data is embedded in the app. Records remain in each visitor's browser storage. Visiting the public site uses a different storage location from local previews; export and restore a backup to move your own records. Sharing the website address does not share those records.
 
 A deployment is complete only after the live page and important workflows have been checked. Pushing code or preparing the Pages branch alone does not prove the website is live.
+
+## Sales review releases
+
+Build with `npm run build` on `feature/sales-stock`. Publish `dist-sales/` only to `gh-pages:sales-preview/` and `dist-compat-sales/` only to `gh-pages:compatibility-sales-preview/`. Verify every existing root and `compatibility/` file is byte-for-byte unchanged before pushing. The build permits only HTML, compiled CSS, compiled JS, PDF library and `.nojekyll`; do not copy backups, fixtures, attachments, browser storage, logs or environment files. Do not merge to `main` or `compatibility/android-4`, or replace either existing Pages path, until the user approves the reviewed previews.

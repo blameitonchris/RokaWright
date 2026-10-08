@@ -1,3 +1,5 @@
+> Historical compatibility-release notes follow. On `feature/sales-stock`, use the new sales preview paths described in the final section; do not redeploy `compatibility/`.
+
 # Android tablet compatibility preview
 
 ## Protected release
@@ -43,4 +45,8 @@ ES5 parsing and feature simulation are evidence of targeted fixes, not proof of 
 
 If layout or dialog scrolling is still broken, try https://blameitonchris.github.io/RokaWright/compatibility/?legacy=1 . This forces the stacked layout and disables PDFs in favor of readable/copyable quotes. Both URLs use the same preview-only data.
 
-Build with `npm run build`; output is the allowlisted `dist-compat/`. Refresh the downloadable preview with `npm run build:standalone`. Do not run the old full-root Pages publish procedure for this branch. Deploy only into `compatibility/`, verify every original root asset is unchanged, and keep `main` at its checkpoint until approved.
+On the original `compatibility/android-4` branch, build with `npm run build`; output is the allowlisted `dist-compat/`. Refresh the downloadable preview with `npm run build:standalone`. Do not run the old full-root Pages publish procedure for this branch. Deploy only into `compatibility/`, verify every original root asset is unchanged, and keep `main` at its checkpoint until approved.
+
+## Sales / stock review
+
+The separate tablet sales preview is at `compatibility-sales-preview/` and uses the shared feature engine on branch `feature/sales-stock`. It does not replace this compatibility release. See the README’s “Sales and stock review previews” for storage transfer, validation, refund semantics and actual-tablet testing. New report tables scroll inside their panel; legacy chart bars use block layout and exact tabular alternatives. New action controls use explicit click handlers rather than relying on native form submission. CSV and report text use the existing copyable-text fallback. Review these new screens on the real Android 4.2.2 tablet before promoting them.

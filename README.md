@@ -1,4 +1,4 @@
-> Android compatibility preview: see [COMPATIBILITY.md](COMPATIBILITY.md) for the separate link, isolated test storage, tablet checklist, and limits. The approved production release remains unchanged.
+> Sales and stock review branch: use the two preview links below. Both original published apps remain unchanged. See [COMPATIBILITY.md](COMPATIBILITY.md) for the original tablet work and its limits.
 
 # RokaWright
 
@@ -32,7 +32,7 @@ This project is separate from BakePrice and RebuildReady. Publishing instruction
 - **Saved Jobs:** Search and filter records. Reopen to edit, choose Waiting, In progress, Ready, or Collected, and set an optional due date. Past-due records are highlighted until collected. Delete buttons always ask for confirmation.
 - **Payments:** Record a deposit or additional payment, date, and note. Save the job to keep these changes. Payments reduce the balance; overpayments are clearly identified. A removed payment is removed when you save the job.
 - **Prices:** Edit standard prices or add/remove services. Leave a standard price blank for custom pricing. Saved jobs keep their original descriptions and prices, including removed services. Overrides on a job don't change the menu.
-- **Print / Save as PDF:** Shows a preview of the current quote, including unsaved edits. Click Print / Save as PDF in that preview, then choose “Save as PDF” in the browser's destination selector. If the chat file preview blocks printing, choose Download printable quote, open that downloaded HTML file in Chrome or Edge, and click its print button. The quote includes itemized pricing, extra work, total, payments, balance, dates, customer, reference, and the materials note. Customer instructions, workroom notes, customer notes, and measurements stay private. Service details and extra-work explanations appear on the quote, so use those fields for customer-facing text. Save the job separately if you want it stored in the app.
+- **Print / Save as PDF:** Shows a preview of the current quote, including unsaved edits. Click Save PDF in that preview to download a PDF directly; open it in a PDF viewer for paper printing. If the chat file preview blocks printing, choose Download printable quote, open that downloaded HTML file in Chrome or Edge, and click its print button. The quote includes itemized pricing, extra work, total, payments, balance, dates, customer, reference, and the materials note. Customer instructions, workroom notes, customer notes, and measurements stay private. Service details and extra-work explanations appear on the quote, so use those fields for customer-facing text. Save the job separately if you want it stored in the app.
 
 ## Your data and backups
 
@@ -57,9 +57,9 @@ The browser tests use Chromium at `/usr/bin/chromium` in this environment. On an
 
 Tests cover integer-cent arithmetic, invalid amounts and quantities, backup validation, the $18 bundled example, persistence across reload, historical quote prices, deposits/additional payments/overpayment, backup download and restore, measurement snapshots, phone layout, and print content/privacy. Browser tests produce a sample PDF and a mobile screenshot in ignored `test-results/`.
 
-## First-version limitations
+## Limits
 
-Use one browser tab for editing at a time; simultaneous tabs don't merge changes. Browser storage is not encrypted and has a limited capacity. Avoid shared devices, and keep backups secure. There are no automated backups, payment processing, tax calculations, inventory, accounts, or cloud synchronization. Browser printing handles PDF generation, so page layout and dialog options can vary between browsers. The server is a local development preview, not a hosted deployment.
+Use one browser tab for editing at a time; simultaneous tabs don't merge changes. Browser storage is not encrypted and has a limited capacity. Avoid shared devices, and keep backups secure. There are no automated backups, payment processing, tax calculations, business-cost/profit tracking, accounts, or cloud synchronization. Quotes generate PDFs directly on supported browsers; report printing uses the browser print dialog. Older devices have readable and copyable alternatives. The server is a local development preview, not a hosted deployment.
 
 ### Chat file preview buttons
 
@@ -73,4 +73,53 @@ After changing PDF code, run `npm run build:standalone` to rebuild the local PDF
 
 ## Website deployment
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for GitHub Pages activation and release checks. Run `npm run build` to create the public-only `dist/` folder.
+See [DEPLOYMENT.md](DEPLOYMENT.md) for GitHub Pages activation and release checks. On this sales review branch, `npm run build` creates public-only `dist-sales/` and `dist-compat-sales/` folders for the two separate previews. Do not replace root or `compatibility/` assets.
+
+## Sales and stock review previews — October 2026
+
+This feature lives on `feature/sales-stock`, based on the shared compatible app engine. Neither `main` nor `compatibility/android-4` is replaced. The modern appearance remains on capable browsers; the tablet retains its stacked layout, dialog, date-entry, quote and download fallbacks. Both previews include the same sales, stock and reporting engine.
+
+- Modern preview: https://blameitonchris.github.io/RokaWright/sales-preview/
+- Tablet preview: https://blameitonchris.github.io/RokaWright/compatibility-sales-preview/
+- Original modern release: https://blameitonchris.github.io/RokaWright/
+- Original compatibility release: https://blameitonchris.github.io/RokaWright/compatibility/
+
+The previews use `rokawright.salespreview.v2` and `rokawright.compat.salespreview.v2` respectively. The original storage keys (`rokawright.v1`, `rokawright.compat.v1`) remain untouched. Records are browser-local, device-specific and **never automatically synchronized**, even on the same origin. Copy a private backup from the original app, then validate/import it into a preview if needed. Prefer disposable test records. Keep the original backup privately. New version-2 backups contain all old sections plus sales, standalone payments, products, production/opening counts, adjustments and returns. They cannot be imported into the old version-1 app; keep your original backup for that app.
+
+Older version-1 backups are validated and migrated in memory without changing their customer, measurement, job, price or payment values. Missing payment dates remain blank; supply the true date in **Sales → Payments need dates**. Unknown or malformed backups, impossible returns, duplicate job links, and negative stock are rejected before saved data changes. Saving also checks for changes from another tab; reload rather than overwriting newer records. A blocked or unreadable storage area never silently replaces the original data.
+
+### Using sales and stock
+
+1. **Stock**: add a product (optional variant and suggested price), then record production or opening stock. Adjustments are signed changes with a required reason, not replacement counts. Mistaken entries can be corrected or removed if resulting stock stays non-negative.
+2. **Sales → Record a sale**: confirm the local sale date, optionally choose a customer, add price-list services, custom lines, or ready-made products. Classify each line as a made item or alteration/other service. Price-list names beginning with “Make” default to made items; change the category when needed. Extra-work charges apply once per line. Stock selection is optional: made-to-order and services use none.
+3. **Saved Jobs → Record sale**: copies actual job lines and asks you to confirm the date in the sale form. Old jobs are never converted automatically. Repeat use opens the linked sale rather than duplicating it. Payments belong to the original job and are read once. Future job/price-list changes leave saved sale prices intact. “Update lines explicitly from original job” replaces lines only after confirmation; save to apply.
+4. Save a standalone sale before entering payments. Every new payment needs its actual receipt date. The editor shows received money, refunds and remaining balance (or overpayment/refund due). Immediate payment/return actions warn before discarding unsaved line edits.
+5. For a return, choose the line, returned quantity (0 for a price refund), date, reason, refund/credit value and money actually paid back (0 for credit against an unpaid balance). Mark usable ready-made goods for restocking. Cash refunds cannot exceed recorded receipts. Partial extra-work refunds are explicit. Returned quantities and credits cannot exceed the sale line. Reversing a mistaken return is confirmed and validated.
+6. Editing or deleting an unpaid unlinked sale changes the derived stock once. Cancelled sales release stock and disappear from sales reports while preserving actual receipts. Reactivation validates available stock. Returned sales retain return history: use returns/credits to reverse their value, or explicitly reverse mistaken returns before cancellation. Sales with payments, returns or job links cannot be permanently deleted; keep the audit history. Jobs with linked sales cannot be deleted.
+
+### Reports
+
+Today, Monday–Sunday week, month, year and inclusive custom dates use **local calendar dates**. Gross sales use sale dates; refunds/credits and actual cash refunds use return/refund dates; money received uses payment dates. Cancelled sales are excluded from sales figures; their receipts remain real money received. Jobs with deposits but no recorded sale contribute receipts without inventing a sale. Undated payments are excluded with a correction list. Date filters select reporting activity, not the sale-history list.
+
+Reports show sales/refunds/net sales, sale count, separate made-item and service units sold, returned units in the breakdown, best sellers by net quantity and net value, gross receipts, cash paid back and net receipts. A refund from a previous-period sale may produce negative net sales in the current period. Mixed-line payments are proportionally allocated by line value for category filters, with integer-cent rounding that conserves the total. Unvalued job payments default to service receipts when filtered. The chart shows dates with activity (omitted dates mean zero); an accessible scrollable table provides exact amounts. CSV and printable summaries use the same selected range and category. No costs or profit are calculated.
+
+CSV downloads become copyable text on unsupported browsers. “Printable summary” offers a full-page readable summary and copyable text; on modern browsers it also offers browser printing/Save as PDF. On tablets without printing, use screenshots or privately transfer a backup to a newer device. No offline or service-worker support is added.
+
+### Preview test on the actual tablet
+
+Use Chrome **71.0.3578.99** or Opera **50.5.2426.149814** on the Android **4.2.2** tablet:
+
+1. Open the tablet preview above; the originals stay available.
+2. Add a do-rag product at $10 and record five made units in Stock.
+3. Record a sale of two stocked do-rags and one $12 made-to-order hoodie. Total should be $32 and stock should show three available.
+4. Save an alteration job with a deposit; choose Record sale and confirm the date. Repeat the action: one sale and one deposit should remain.
+5. Try a return, a sale edit, and cancellation on a separate unreturned sale. Confirm stock, amounts, filters, and balances.
+6. Rotate the tablet. Scroll through all sections, menus, forms and tables. Try CSV text, full report, quote text and backup/paste restore. Report any missing content or inactive buttons and which browser was used.
+
+Desktop tests use modern Chromium, mobile viewport checks, forced legacy layout and removed-API simulations. Firefox could not be installed because the environment blocked its browser-download domains; Firefox is not claimed as tested. These checks **they do not prove actual Android compatibility**. The original compatibility version was tested successfully by the friend; these new feature screens still need tablet review before publication.
+
+### Build and verification
+
+`npm run build` builds allowlisted public files into `dist-sales/` and `dist-compat-sales/`. Both use an ES5-parsed classic-script bundle with API polyfills and CSS color fallbacks. `npm run build:standalone` updates the optional single HTML preview. `npm test` checks stock, historical prices, linked payments, refunds, imports and calendar boundaries. `npm run test:browser` checks existing workflows plus the new workflows in modern and simulated tablet configurations. Synthetic automated-test fixtures live only in tests and are excluded from release assets. No real customer or private test records belong in GitHub.
+
+Checkpoints: `checkpoint-before-sales-modern-20261008`, `checkpoint-before-sales-compat-20261008`, `checkpoint-before-sales-pages-20261008`. Review approval is required before replacing either original release. Publish previews only under `sales-preview/` and `compatibility-sales-preview/`; preserve root and `compatibility/` bytes.

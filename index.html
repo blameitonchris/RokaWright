@@ -41,7 +41,7 @@
         <button data-view="new">New Job</button
         ><button data-view="customers">Customers</button
         ><button data-view="jobs">Saved Jobs</button
-        ><button data-view="prices">Prices</button>
+        ><button data-view="prices">Prices</button><button data-view="sales">Sales</button><button data-view="stock">Stock</button>
       </nav>
       <div class="header-logo">
         <svg
@@ -74,8 +74,7 @@
       </div>
     </header>
     <div class="compat-preview-banner" role="status">
-      <b>Compatibility preview</b> · Test data is separate from the live app. Do
-      not enter important records here. No offline support has been added.
+      <b>Sales &amp; stock review preview</b> · Separate browser storage from both published apps. Use a private backup/import to copy records; changes never synchronize. Keep a backup before testing. No offline support has been added.
     </div>
     <noscript
       ><p>
@@ -161,7 +160,7 @@
       ><button id="backup-close" class="quiet">Close</button>
     </dialog>
     <script>
-      window.ROKA_STORAGE_KEY = "rokawright.compat.v1";
+      window.ROKA_STORAGE_KEY = "rokawright.salespreview.v2";
     </script>
     <script src="app-compat.js"></script>
   </body>
