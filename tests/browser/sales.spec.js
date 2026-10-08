@@ -13,17 +13,17 @@ for(const legacy of [false,true]){
   test.beforeEach(async({page})=>{
    // Check the same shared engine in two isolated storage configurations.
    if(!process.env.ROKA_BASE_URL)await page.route('http://127.0.0.1:3100/',async route=>{
-    const response=await route.fetch();const html=(await response.text()).replace('rokawright.salespreview.v2',legacy?'rokawright.compat.salespreview.v2':'rokawright.salespreview.v2');await route.fulfill({response,body:html});
+    const response=await route.fetch();const html=(await response.text()).replace(/rokawright\.(salespreview\.v2|v1)/,legacy?'rokawright.compat.salespreview.v2':'rokawright.salespreview.v2');await route.fulfill({response,body:html});
    });
    await page.addInitScript(()=>{
-    localStorage.setItem('rokawright.v1','protected-modern');localStorage.setItem('rokawright.compat.v1','protected-tablet');
+    localStorage.setItem('rokawright.protected-modern','protected-modern');localStorage.setItem('rokawright.protected-tablet','protected-tablet');
    });
    if(legacy)await page.addInitScript(()=>{
     delete window.structuredClone;delete window.Promise;delete Object.entries;delete Array.prototype.includes;delete Array.prototype.find;delete String.prototype.padStart;delete Element.prototype.remove;
    });
    // The route above also handles queries explicitly in local tests.
    if(legacy&&!process.env.ROKA_BASE_URL)await page.route('http://127.0.0.1:3100/?legacy=1',async route=>{
-    const response=await route.fetch();await route.fulfill({response,body:(await response.text()).replace('rokawright.salespreview.v2','rokawright.compat.salespreview.v2')});
+    const response=await route.fetch();await route.fulfill({response,body:(await response.text()).replace(/rokawright\.(salespreview\.v2|v1)/,'rokawright.compat.salespreview.v2')});
    });
    await page.setViewportSize(legacy?{width:800,height:600}:{width:1280,height:900});
    await page.goto(legacy?'./?legacy=1':'./');
@@ -59,7 +59,7 @@ for(const legacy of [false,true]){
    await nav(page,'Sales');await page.locator('#new-sale').click();await page.locator('[name="add-service"]').selectOption('service-0');await page.locator('#save-sale').click();await page.locator('#delete-sale').click();await confirm(page);expect((await records(page)).sales.length).toBe(1);
    await page.reload();await nav(page,'Stock');await expect(page.locator('[data-stock-card]')).toContainText('5 available');
    for(const size of [{width:375,height:812},{width:600,height:800}]){await page.setViewportSize(size);await nav(page,'Sales');expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);await page.locator('#backup-open').scrollIntoViewIfNeeded();await expect(page.locator('#backup-open')).toBeVisible();}
-   expect(errors).toEqual([]);expect(await page.evaluate(()=>localStorage.getItem('rokawright.v1'))).toBe('protected-modern');expect(await page.evaluate(()=>localStorage.getItem('rokawright.compat.v1'))).toBe('protected-tablet');
+   expect(errors).toEqual([]);expect(await page.evaluate(()=>localStorage.getItem('rokawright.protected-modern'))).toBe('protected-modern');expect(await page.evaluate(()=>localStorage.getItem('rokawright.protected-tablet'))).toBe('protected-tablet');
   });
   test('older backup migration, dated correction, job sale and deposit without duplication, frozen price, new backup restore',async({page})=>{
    const old={version:1,customers:[{id:'c',name:'Customer',phone:'123',email:'',notes:'Test only',measurements:{unit:'in',values:{Chest:'32'}}}],services:structuredClone(defaults),jobs:[{id:'j',reference:'RW-old',created:'2026-10-01',due:'',customerId:'c',customerName:'Customer',kind:'Job',status:'Ready',notes:'private test note',instructions:'internal',measurements:{unit:'in',values:{Chest:'32'}},lines:[{id:'l',serviceId:'service-0',name:'Alter pants',quantity:1,cents:500,extraCents:0,extraNote:'',details:''}],payments:[{id:'p',cents:200,note:'Undated deposit'}]}]};
@@ -83,4 +83,13 @@ test('saving refuses to overwrite records changed by another tab',async({page})=
  await page.goto('./');await nav(page,'Stock');await field(page,'product-name','Unsaved product');
  await page.evaluate(()=>{const next=JSON.parse(localStorage.getItem(window.ROKA_STORAGE_KEY) || '{"version":2,"services":[],"jobs":[],"customers":[],"sales":[],"products":[],"movements":[]}');next.products.push({id:'other-tab',name:'Product from another tab',variant:'',cents:100});localStorage.setItem(window.ROKA_STORAGE_KEY,JSON.stringify(next));});
  await page.locator('#product-save').click();await expect(page.locator('#sales-message')).toContainText('another tab');expect((await records(page)).products.map(p=>p.name)).toEqual(['Product from another tab']);await page.reload();await nav(page,'Stock');await expect(page.locator('#app')).toContainText('Product from another tab');
+});
+
+test('in-place version-1 storage migration preserves records and the other published storage key',async({page})=>{
+ await page.goto('./');const key=await page.evaluate(()=>window.ROKA_STORAGE_KEY);
+ const other=key==='rokawright.compat.v1'?'rokawright.v1':'rokawright.compat.v1';
+ const old={version:1,services:structuredClone(defaults),jobs:[],customers:[{id:'migration-customer',name:'Synthetic migration customer',phone:'123',email:'',notes:'Synthetic note',measurements:{unit:'cm',values:{Chest:'81.28'}}}]};
+ await page.evaluate(({key,other,old})=>{localStorage.setItem(key,JSON.stringify(old));localStorage.setItem(other,'untouched-other-version');},{key,other,old});
+ await page.reload();await nav(page,'Customers');await expect(page.locator('#app')).toContainText('Synthetic migration customer');expect((await records(page)).version).toBe(1);
+ await nav(page,'Stock');await field(page,'product-name','Migration test product');await page.locator('#product-save').click();const migrated=await records(page);expect(migrated.version).toBe(2);expect(migrated.customers).toEqual(old.customers);expect(migrated.services).toEqual(old.services);expect(migrated.jobs).toEqual(old.jobs);expect(await page.evaluate(other=>localStorage.getItem(other),other)).toBe('untouched-other-version');await page.reload();await nav(page,'Customers');await expect(page.locator('#app')).toContainText('Synthetic migration customer');
 });

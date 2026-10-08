@@ -304,8 +304,8 @@ test("legacy fallback workflow and production storage isolation (simulated capab
     try {
       delete Blob.prototype.text;
     } catch {}
-    if (!localStorage.getItem("rokawright.v1"))
-      localStorage.setItem("rokawright.v1", "production-records-untouched");
+    if (!localStorage.getItem("rokawright.unused-isolation-test"))
+      localStorage.setItem("rokawright.unused-isolation-test", "production-records-untouched");
   });
   await page.setViewportSize({ width: 800, height: 600 });
   await page.goto("./?legacy=1");
@@ -365,7 +365,7 @@ test("legacy fallback workflow and production storage isolation (simulated capab
     .locator(".confirmation")
     .getByRole("button", { name: "Confirm", exact: true })
     .click();
-  expect(await page.evaluate(() => localStorage.getItem("rokawright.v1"))).toBe(
+  expect(await page.evaluate(() => localStorage.getItem("rokawright.unused-isolation-test"))).toBe(
     "production-records-untouched",
   );
   expect(

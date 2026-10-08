@@ -1,4 +1,6 @@
-> This branch is a sales/stock review. Publish only into `sales-preview/` and `compatibility-sales-preview/`. Do not replace root or `compatibility/` files, or merge to either original source branch.
+> Both Sales and Stock versions were approved for publication on 8 October 2026. Deploy `dist/` to the Pages root and `dist-compat/` to `compatibility/`. Preserve both preview directories. Retain the original production storage keys; never publish customer records or backups.
+
+> Historical preview-only instructions below applied before publication approval.
 
 # Publish RokaWright with GitHub Pages
 
@@ -18,7 +20,7 @@ If Pages requires a plan upgrade for a private repository, do not make the repos
 
 ## Release checks
 
-Run `npm ci`, `npm run build`, `npm test`, and `npm run test:browser`. The build uses an explicit asset allowlist and refuses unexpected files in `dist-sales/` and `dist-compat-sales/`. Copy their contents only into the matching review subdirectories on the Pages branch. Do not upload the entire project folder, browser profile, or test output.
+Run `npm ci`, `npm run build`, `npm test`, and `npm run test:browser`. The build uses an explicit asset allowlist and refuses unexpected files in all four build directories. Copy only allowlisted assets to the corresponding production or preview path. Do not upload the entire project folder, browser profile, or test output.
 
 No customer data is embedded in the app. Records remain in each visitor's browser storage. Visiting the public site uses a different storage location from local previews; export and restore a backup to move your own records. Sharing the website address does not share those records.
 

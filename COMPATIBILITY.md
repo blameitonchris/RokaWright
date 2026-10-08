@@ -1,3 +1,5 @@
+> Sales and Stock publication is approved. The updated tablet production release uses the existing `compatibility/` URL and `rokawright.compat.v1` storage key. Existing records migrate without transfer. Prior preview-only restrictions below are historical; keep preview paths separate.
+
 > Historical compatibility-release notes follow. On `feature/sales-stock`, use the new sales preview paths described in the final section; do not redeploy `compatibility/`.
 
 # Android tablet compatibility preview

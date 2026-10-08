@@ -1,4 +1,6 @@
-> Sales and stock review branch: use the two preview links below. Both original published apps remain unchanged. See [COMPATIBILITY.md](COMPATIBILITY.md) for the original tablet work and its limits.
+> Sales and Stock is approved for publication on both existing links. The release retains `rokawright.v1` for the modern app and `rokawright.compat.v1` for the tablet app, so existing browser records are read and migrated in place. No automatic synchronization is added.
+
+> Earlier review notes below describe the isolated previews. Current production builds are `dist/` (modern) and `dist-compat/` (tablet).
 
 # RokaWright
 
@@ -73,9 +75,9 @@ After changing PDF code, run `npm run build:standalone` to rebuild the local PDF
 
 ## Website deployment
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for GitHub Pages activation and release checks. On this sales review branch, `npm run build` creates public-only `dist-sales/` and `dist-compat-sales/` folders for the two separate previews. Do not replace root or `compatibility/` assets.
+See [DEPLOYMENT.md](DEPLOYMENT.md) for GitHub Pages activation and release checks. `npm run build` creates `dist/` for the modern release and `dist-compat/` for the tablet release, plus the two isolated preview builds. Publish only their allowlisted assets to the matching paths.
 
-## Sales and stock review previews — October 2026
+## Sales and stock previews — review history, October 2026
 
 This feature lives on `feature/sales-stock`, based on the shared compatible app engine. Neither `main` nor `compatibility/android-4` is replaced. The modern appearance remains on capable browsers; the tablet retains its stacked layout, dialog, date-entry, quote and download fallbacks. Both previews include the same sales, stock and reporting engine.
 
@@ -125,3 +127,10 @@ Desktop tests use modern Chromium, mobile viewport checks, forced legacy layout 
 Checkpoints: `checkpoint-before-sales-modern-20261008`, `checkpoint-before-sales-compat-20261008`, `checkpoint-before-sales-pages-20261008`. Review approval is required before replacing either original release. Publish previews only under `sales-preview/` and `compatibility-sales-preview/`; preserve root and `compatibility/` bytes.
 
 Verification completed for this review: 9 unit tests, all 12 local browser workflows, and all 7 standalone regression workflows passed. The same 12 workflows also passed against each deployed preview’s actual assets, fetched with certificate-verified HTTPS for this environment’s browser proxy. All 17 served assets (both originals plus both previews) matched the committed Pages files byte-for-byte. Existing modern and tablet Pages files and their source branches remain unchanged. Real-tablet review is still pending.
+
+
+## Approved publication — 8 October 2026
+
+The user approved both versions after reviewing the previews. Publish the modern production build at https://blameitonchris.github.io/RokaWright/ and the tablet build at https://blameitonchris.github.io/RokaWright/compatibility/. Each keeps its original browser-storage key. Existing version-1 data is validated and migrated in memory; the first successful save writes version 2 without deleting customers, jobs, measurements, prices or payments. Back up regularly, particularly before clearing browser data. Preview-only records do not automatically move to production; export/import a private backup if you want to transfer them, knowing restore replaces the destination records.
+
+Publication checkpoints are `checkpoint-before-sales-publication-modern-20261008`, `checkpoint-before-sales-publication-tablet-20261008`, and `checkpoint-before-sales-publication-pages-20261008`. The public deployment contains application assets only. Preview directories remain available and unchanged. Automated checks include startup migration under the original storage key and protection of the other version's key; real-device limitations in the compatibility notes still apply.
